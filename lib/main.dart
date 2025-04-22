@@ -19,7 +19,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Timer? _apiTimer;
 
   //Replace this by your API url
-  final String _apiUrl = 'YOUR_API_ENDPOINT';
+  final String _apiUrl = 'http://10.120.1.233:8080/clicker/';
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _sendDataToApi() async {
     try {
       final response = await http.post(
-        Uri.parse(_apiUrl),
+        Uri.parse(_apiUrl + widget.nickname),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'nickname': widget.nickname,
