@@ -6,17 +6,16 @@ import 'package:http/http.dart' as http;
 
 import '../constants/api_config.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title, required this.nickname});
+class ClickerPage extends StatefulWidget {
+  const ClickerPage({super.key, required this.nickname});
 
-  final String title;
   final String nickname;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ClickerPage> createState() => _ClickerPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _ClickerPageState extends State<ClickerPage> {
   int _counter = 0;
   Timer? _apiTimer;
 
@@ -78,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text('${widget.title} - ${widget.nickname}'),
+        title: Text(widget.nickname),
       ),
       body: Center(
         child: Column(
