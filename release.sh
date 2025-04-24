@@ -55,7 +55,7 @@ git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
 # 4. Pousser le tag et les commits
 echo "Poussage des commits et du tag..."
 git commit -m "chore(release): v$NEW_VERSION"
-git push origin main
+git push origin
 git push origin "v$NEW_VERSION"
 
 # 5. Créer une release publique (GitHub)
