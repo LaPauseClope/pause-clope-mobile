@@ -2,7 +2,7 @@ name: la_pause_clope
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.2
 
 environment:
   sdk: ^3.7.2
@@ -15,10 +15,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  flutter_lints: ^5.0.0
+  flutter_lints: ^3.0.1
+  mockito: ^5.4.2
+  build_runner: ^2.4.6
 
 flutter:
   uses-material-design: true
   assets:
-     - assets/images/coffee_icon.png
+    - assets/images/coffee_icon.png
