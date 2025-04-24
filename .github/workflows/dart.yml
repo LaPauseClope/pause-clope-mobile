@@ -7,7 +7,7 @@ on:
     branches: [ main, test ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,8 +22,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Format check
-        run: dart format . --set-exit-if-changed
+      - name: Run formatter
+        run: dart format .
+
+      - name: Commit formatted code
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "ci: auto-format via GitHub Actions" || echo "Nothing to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Static analysis
         run: flutter analyze
