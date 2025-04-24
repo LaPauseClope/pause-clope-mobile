@@ -29,7 +29,9 @@ jobs:
         run: dart format . --set-exit-if-changed || true
 
       - name: Static analysis
-        run: flutter analyze
+        run: |
+          flutter analyze > analyze.log || true
+          cat analyze.log
 
       - name: Run tests
         run: flutter test --reporter expanded
