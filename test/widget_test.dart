@@ -6,7 +6,7 @@ import 'package:la_pause_clope/pages/nickname_page.dart';
 
 import 'widget_test.mocks.dart';
 
-@GenerateMocks([NavigatorObserver])
+@GenerateNiceMocks([MockSpec<NavigatorObserver>()])
 void main() {
   late MockNavigatorObserver mockObserver;
 
@@ -22,6 +22,7 @@ void main() {
       ),
     );
 
+    // Laisse le temps aux animations et timers de se lancer
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
 
@@ -30,6 +31,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1300));
     await tester.pumpAndSettle();
 
+    // Vérifie qu'une navigation a été déclenchée
     verify(
       mockObserver.didReplace(
         newRoute: anyNamed('newRoute'),
