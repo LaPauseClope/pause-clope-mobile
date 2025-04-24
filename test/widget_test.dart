@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:la_pause_clope/pages/nickname_page.dart';
 
 void main() {
-  testWidgets('NicknamePage affiche le champ et le bouton', (WidgetTester tester) async {
+  testWidgets('NicknamePage affiche le champ et le bouton', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MaterialApp(home: NicknamePage()));
 
     expect(find.byType(TextField), findsOneWidget);
@@ -18,7 +20,9 @@ void main() {
     expect(find.text('Entrez votre nom de joueur'), findsOneWidget);
   });
 
-  testWidgets('Navigue vers ClickerPage si un nom est saisi', (WidgetTester tester) async {
+  testWidgets('Navigue vers ClickerPage si un nom est saisi', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MaterialApp(home: NicknamePage()));
 
     // Entrer un pseudo
@@ -27,10 +31,14 @@ void main() {
     // Lancer le bouton
     await tester.tap(find.text('Commençons le jeux !'));
     await tester.pump(); // lancement animations
-    await tester.pump(const Duration(milliseconds: 1300)); // laisser les animations se finir
+    await tester.pump(
+      const Duration(milliseconds: 1300),
+    ); // laisser les animations se finir
 
     // Vérifie qu’on a navigué vers une autre page
-    expect(find.byType(NicknamePage), findsNothing); // n’est plus sur NicknamePage
+    expect(
+      find.byType(NicknamePage),
+      findsNothing,
+    ); // n’est plus sur NicknamePage
   });
 }
-
