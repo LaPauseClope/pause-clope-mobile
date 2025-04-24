@@ -1,25 +1,36 @@
 include: package:flutter_lints/flutter.yaml
 
-analyzer:
-  exclude:
-    - '**/*.g.dart'
-    - '**/*.freezed.dart'
-    - '**/*.gr.dart'
-
 linter:
   rules:
-    # Additional recommended rules
-    always_declare_return_types: true
-    avoid_print: true
-    avoid_unnecessary_containers: true
+    # BONNES PRATIQUES FLUTTER
     prefer_const_constructors: true
-    prefer_final_fields: true
-    prefer_single_quotes: true
-    sort_child_properties_last: true
-    unnecessary_brace_in_string_interps: true
-    use_full_hex_values_for_flutter_colors: true
+    prefer_const_literals_to_create_immutables: true
+    avoid_unnecessary_containers: true
 
-    # Safe and clean code practices
-    avoid_returning_null_for_future: true
-    avoid_void_async: true
-    parameter_assignments: false
+    # NOMMAGE & STYLE
+    camel_case_types: true
+    constant_identifier_names: false
+    file_names: true
+    prefer_single_quotes: true
+    always_use_package_imports: true
+
+    # UTILISATION
+    unnecessary_this: true
+    avoid_print: true
+    prefer_final_locals: true
+    avoid_empty_else: true
+
+    # NULL SAFETY & CLEAN CODE
+    no_leading_underscores_for_local_identifiers: true
+    annotate_overrides: true
+    use_super_parameters: true
+    unnecessary_null_checks: true
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+
+  errors:
+    unused_import: warning
+    dead_code: warning
