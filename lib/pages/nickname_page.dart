@@ -117,8 +117,6 @@ class _NicknamePageState extends State<NicknamePage>
   }
 
   Future<void> _navigateToHomePage(BuildContext context) async {
-
-
     if (_nicknameController.text.isNotEmpty) {
       _imageController.forward();
       _titleController.reverse();
@@ -129,7 +127,8 @@ class _NicknamePageState extends State<NicknamePage>
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => ClickerPage(nickname: _nicknameController.text),
+              builder:
+                  (context) => ClickerPage(nickname: _nicknameController.text),
             ),
           );
         }
