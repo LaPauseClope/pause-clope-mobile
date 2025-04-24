@@ -14,7 +14,9 @@ void main() {
     mockObserver = MockNavigatorObserver();
   });
 
-  testWidgets('Navigue vers ClickerPage si un nom est saisi', (WidgetTester tester) async {
+  testWidgets('Navigue vers ClickerPage si un nom est saisi', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: const NicknamePage(),
@@ -31,9 +33,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // Vérifie qu’une navigation a eu lieu
-    verify(mockObserver.didReplace(
-      newRoute: anyNamed('newRoute'),
-      oldRoute: anyNamed('oldRoute'),
-    )).called(1);
+    verify(
+      mockObserver.didReplace(
+        newRoute: anyNamed('newRoute'),
+        oldRoute: anyNamed('oldRoute'),
+      ),
+    ).called(1);
   });
 }
