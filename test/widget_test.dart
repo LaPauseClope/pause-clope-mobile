@@ -4,7 +4,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:la_pause_clope/pages/nickname_page.dart';
 
-import 'nickname_page_test.mocks.dart';
+import 'widget_test.mocks.dart';
 
 @GenerateMocks([NavigatorObserver])
 void main() {
@@ -14,9 +14,7 @@ void main() {
     mockObserver = MockNavigatorObserver();
   });
 
-  testWidgets('Navigue vers ClickerPage si un nom est saisi', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('Navigue vers ClickerPage si un nom est saisi', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: const NicknamePage(),
@@ -32,7 +30,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1300));
     await tester.pumpAndSettle();
 
-    // Vérifie qu’une navigation a eu lieu
     verify(
       mockObserver.didReplace(
         newRoute: anyNamed('newRoute'),
