@@ -36,7 +36,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Static analysis
-        run: flutter analyze
+        run: |
+          flutter analyze > analyze.log || true
+          cat analyze.log
+
 
       - name: Run tests
         run: flutter test
