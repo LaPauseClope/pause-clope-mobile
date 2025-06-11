@@ -1,0 +1,32 @@
+name: Deploy Release
+
+on:
+  push:
+    branches: [release]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Setup GH CLI
+        uses: cli/gh-action@v2
+
+      - name: Make release script executable
+        run: chmod +x ./scripts/release.sh
+
+      - name: Run release
+        shell: bash
+        run: ./scripts/release.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
