@@ -16,12 +16,17 @@ rollback() {
   echo "Suppression du tag $NEW_VERSION s’il a été créé..."
 
   git tag -d "$NEW_VERSION" 2>/dev/null || true
+
+  echo "Synchronisation des tags locaux avec le distant..."
+  git fetch origin --tags --force
+
   git push origin --delete "$NEW_VERSION" 2>/dev/null || true
   gh release delete "$NEW_VERSION" --yes 2>/dev/null || true
 
-  echo "🔁 Rollback terminé. État restauré."
+  echo "Rollback terminé. État restauré."
   exit 1
 }
+
 
 trap rollback ERR
 
@@ -119,7 +124,7 @@ git add CHANGELOG.md
 
 echo "🏷 Création du commit et du tag $NEW_VERSION..."
 git commit -m "chore(release): $NEW_VERSION"
-exit 42  # 💣 Simule une erreur fatale
+# exit 42  # 💣 Simule une erreur fatale
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
 echo "Push vers origin/$RELEASE_BRANCH et le tag (forcé)..."
