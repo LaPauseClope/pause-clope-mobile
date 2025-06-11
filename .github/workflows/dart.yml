@@ -2,9 +2,9 @@ name: Flutter CI
 
 on:
   push:
-    branches: [ main, test ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, test ]
+    branches: [ main ]
 
 jobs:
   test:
@@ -13,6 +13,19 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Récupérer tout l'historique pour git log
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          # Vérifier que la configuration a bien été appliquée
+          echo "Git user.email: $(git config --global user.email)"
+          echo "Git user.name: $(git config --global user.name)"
+          # S'assurer que l'identité est bien définie pour ce dépôt
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name "${{ github.actor }}"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -33,12 +46,16 @@ jobs:
           flutter analyze > analyze.log || true
           cat analyze.log
 
-      - name: Debug API call
-        run: |
-          http_code=$(curl -o /dev/null -s -w "%{http_code}" "http://20.188.40.98:8080/clicker/testuser")
-          echo "API HTTP response code: $http_code"
       - name: Run tests
         run: flutter test --reporter expanded
+
+      - name: Make release script executable
+        run: chmod +x release.sh
+
+      - name: Run release script
+        run: ./release.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release:
     runs-on: ubuntu-latest
