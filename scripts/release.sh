@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+##########################################
+#           Rollback Function            #
+##########################################
 rollback() {
   echo "Une erreur est survenue, rollback en cours..."
 
@@ -8,23 +11,27 @@ rollback() {
   git clean -fd
   git checkout "$CURRENT_BRANCH"
 
-  echo "Suppression du tag $NEW_VERSION localement..."
+  echo "Suppression du tag $NEW_VERSION localement (s’il existe)..."
   git tag -d "$NEW_VERSION" 2>/dev/null || true
 
-  echo "Suppression du tag distant..."
-  git push origin --delete "$NEW_VERSION" 2>/dev/null || true
+  echo "Suppression du tag distant (s’il existe)..."
+  git push --delete origin "$NEW_VERSION" 2>/dev/null || true
 
-  echo "Suppression de la release GitHub..."
+  echo "Suppression de la release GitHub si présente..."
   gh release delete "$NEW_VERSION" --yes 2>/dev/null || true
 
+  echo "Refetch des tags depuis origin..."
   git fetch origin --tags --prune --force
 
-  echo "Rollback terminé."
+  echo "Rollback terminé. État restauré."
   exit 1
 }
 
 trap rollback ERR
 
+##########################################
+#           Configurations               #
+##########################################
 CURRENT_BRANCH="main"
 RELEASE_BRANCH="release"
 
@@ -34,17 +41,20 @@ git checkout -B "$RELEASE_BRANCH" "origin/$RELEASE_BRANCH" || git checkout -b "$
 git reset --hard "origin/$CURRENT_BRANCH"
 git clean -fd
 
-LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+##########################################
+#      Détection de la version           #
+##########################################
+echo "Détection du type de version..."
+LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 COMMIT_RANGE="${LATEST_TAG}..HEAD"
 
-echo "Détection du type de version..."
-BREAKING=$(git log $COMMIT_RANGE --pretty=format:"%s" | grep -Ei "BREAKING CHANGE|major" || true)
-FEATURE=$(git log $COMMIT_RANGE --pretty=format:"%s" | grep -Ei "^feat" || true)
+BREAKING_CHANGE=$(git log $COMMIT_RANGE --pretty=format:"%s" | grep -E "BREAKING CHANGE|major" || true)
+FEATURE=$(git log $COMMIT_RANGE --pretty=format:"%s" | grep -E "^feat" || true)
 
 CURRENT_VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}')
 IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
 
-if [ -n "$BREAKING" ]; then
+if [ -n "$BREAKING_CHANGE" ]; then
   MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
 elif [ -n "$FEATURE" ]; then
   MINOR=$((MINOR + 1)); PATCH=0
@@ -54,47 +64,75 @@ fi
 
 NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
+# Supprimer le tag si déjà existant
 git fetch origin --tags
 while git tag -l | grep -q "^$NEW_VERSION$"; do
-  echo "Le tag $NEW_VERSION existe déjà, incrementation..."
+  echo "Le tag $NEW_VERSION existe déjà. Suppression..."
+  git tag -d "$NEW_VERSION" || true
+  git push origin --delete "$NEW_VERSION" || true
+  gh release delete "$NEW_VERSION" --yes || true
   PATCH=$((PATCH + 1))
   NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 done
 
 echo "Nouvelle version déterminée : $NEW_VERSION"
+
+##########################################
+#        Mise à jour pubspec.yaml        #
+##########################################
 sed -i "s/version: $CURRENT_VERSION/version: $NEW_VERSION/" pubspec.yaml
 git add pubspec.yaml
 
+##########################################
+#       Génération du changelog          #
+##########################################
 echo "Génération du changelog..."
-TEMP=$(mktemp)
-echo "## [$NEW_VERSION] - $(date +%F)" > "$TEMP"
-echo "" >> "$TEMP"
+TEMP_CHANGELOG=$(mktemp)
+echo "## [$NEW_VERSION] - $(date +%F)" > "$TEMP_CHANGELOG"
+echo "" >> "$TEMP_CHANGELOG"
 
-echo "### Added" >> "$TEMP"
-git log "$COMMIT_RANGE" --pretty=format:"%s" | grep "^feat" | sed 's/^feat: \(.*\)/- \1/' >> "$TEMP" || echo "- Aucun ajout" >> "$TEMP"
-echo "" >> "$TEMP"
+echo "### Added" >> "$TEMP_CHANGELOG"
+git log "$COMMIT_RANGE" --pretty=format:"%s" | grep -E "^feat" | sed 's/^feat: \(.*\)/- \1/' >> "$TEMP_CHANGELOG" || echo "- Aucun ajout" >> "$TEMP_CHANGELOG"
+echo "" >> "$TEMP_CHANGELOG"
 
-echo "### Changed" >> "$TEMP"
-git log "$COMMIT_RANGE" --pretty=format:"%s" | grep -E "^fix|^refactor" | sed 's/^\(fix\|refactor\): \(.*\)/- \1: \2/' >> "$TEMP" || echo "- Aucun changement" >> "$TEMP"
-echo "" >> "$TEMP"
+echo "### Changed" >> "$TEMP_CHANGELOG"
+git log "$COMMIT_RANGE" --pretty=format:"%s" | grep -E "^fix|^refactor" | sed 's/^\(fix\|refactor\): \(.*\)/- \1: \2/' >> "$TEMP_CHANGELOG" || echo "- Aucun changement" >> "$TEMP_CHANGELOG"
+echo "" >> "$TEMP_CHANGELOG"
 
 if [ -f CHANGELOG.md ]; then
-  cat CHANGELOG.md >> "$TEMP"
+  echo "Fusion avec changelog existant..."
+  cat CHANGELOG.md >> "$TEMP_CHANGELOG"
 fi
 
-mv "$TEMP" CHANGELOG.md
+mv "$TEMP_CHANGELOG" CHANGELOG.md
 git add CHANGELOG.md
 
+##########################################
+# Commit + Tag local (pas encore push)  #
+##########################################
 echo "Commit, tag et release..."
 git commit -m "chore(release): $NEW_VERSION"
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
+##########################################
+# GitHub Release - AVANT le push         #
+##########################################
+RELEASE_NOTES_FILE=$(mktemp)
+cp CHANGELOG.md "$RELEASE_NOTES_FILE"
+
+gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file "$RELEASE_NOTES_FILE" || rollback
+
+##########################################
+# Simulation d’erreur                    #
+##########################################
+echo "Simulation d'une erreur après création du tag..."
+exit 42
+
+##########################################
+# Push (uniquement si GH release ok)     #
+##########################################
+echo "Push vers origin/$RELEASE_BRANCH et le tag..."
 git push origin "$RELEASE_BRANCH" --force || rollback
 git push origin "$NEW_VERSION" || rollback
 
-gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file CHANGELOG.md
-
-# echo "Release $NEW_VERSION publiée avec succès !"
-
-echo "Simulation d'une erreur après création du tag..."
-exit 42
+echo "Publication terminée avec succès."
