@@ -120,7 +120,9 @@ class _ClickerPageState extends State<ClickerPage> {
   }
 
   void _navigateBack(BuildContext context) {
-    Navigator.of(context).pop();
+    // Cancel the timer when navigating back to avoid memory leaks
+    _apiTimer?.cancel();
+    Navigator.pop(context);
   }
 
   @override
