@@ -1,3 +1,3 @@
 abstract class ApiConfig {
-  static const String apiDomain = 'http://10.120.1.233:8080';
+  static const String apiDomain = 'http://20.188.40.98:8080';
 }

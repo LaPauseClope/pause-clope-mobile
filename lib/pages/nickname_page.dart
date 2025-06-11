@@ -183,7 +183,6 @@ class _NicknamePageState extends State<NicknamePage>
                     cursorWidth: 2,
                     maxLength: 20,
                     maxLines: 1,
-
                     controller: _nicknameController,
                     decoration: const InputDecoration(
                       counterStyle: TextStyle(color: AppColors.white),
