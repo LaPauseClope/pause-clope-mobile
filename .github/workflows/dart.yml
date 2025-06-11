@@ -55,6 +55,7 @@ jobs:
         run: chmod +x ./scripts/release.sh
 
       - name: Run release
+        shell: bash
         run: ./scripts/release.sh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
