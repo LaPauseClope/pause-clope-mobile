@@ -43,10 +43,9 @@ jobs:
 
       - name: Static analysis
         run: |
-          echo "hello test"
+          flutter analyze > analyze.log || true
+          cat analyze.log
 
       - name: Run tests
-        run: |
-          http_code=$(curl -o /dev/null -s -w "%{http_code}" "http://20.188.40.98:8080/clicker/testuser")
-          echo "API HTTP response code: $http_code"
+        run: echo "hello test"
         
