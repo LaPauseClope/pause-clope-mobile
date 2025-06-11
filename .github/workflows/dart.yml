@@ -39,8 +39,8 @@ jobs:
           echo "API HTTP response code: $http_code"
 
 
-            - name: Run tests
-              run: flutter test --reporter expanded
+      - name: Run tests
+        run: flutter test --reporter expanded
 
   release:
     runs-on: ubuntu-latest
