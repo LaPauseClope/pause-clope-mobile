@@ -1,10 +1,64 @@
+# name: Flutter CI
+
+# on:
+#   push:
+#     branches: [ main, test ]
+#   pull_request:
+#     branches: [ main, test ]
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v3
+#         with:
+#           fetch-depth: 0  # Récupérer tout l'historique pour git log
+
+#       - name: Configure Git identity
+#         run: |
+#           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+#           git config --global user.name "${{ github.actor }}"
+#           # Vérifier que la configuration a bien été appliquée
+#           echo "Git user.email: $(git config --global user.email)"
+#           echo "Git user.name: $(git config --global user.name)"
+#           # S'assurer que l'identité est bien définie pour ce dépôt
+#           git config user.email "${{ github.actor }}@users.noreply.github.com"
+#           git config user.name "${{ github.actor }}"
+
+#       - name: Set up Flutter
+#         uses: subosito/flutter-action@v2
+#         with:
+#           flutter-version: '3.29.3'
+
+#       - name: Install dependencies
+#         run: flutter pub get
+
+#       - name: Generate mocks
+#         run: flutter pub run build_runner build --delete-conflicting-outputs
+
+#       - name: Format check
+#         run: dart format . --set-exit-if-changed || true
+
+#       - name: Static analysis
+#         run: |
+#           flutter analyze > analyze.log || true
+#           cat analyze.log
+
+#       - name: Run tests
+#         run: |
+#           http_code=$(curl -o /dev/null -s -w "%{http_code}" "http://20.188.40.98:8080/clicker/testuser")
+#           echo "API HTTP response code: $http_code"
+        
+
 name: Flutter CI
 
 on:
   push:
-    branches: [ main, test ]
+    branches: [main, test]
   pull_request:
-    branches: [ main, test ]
+    branches: [main, test]
 
 jobs:
   test:
@@ -13,19 +67,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Récupérer tout l'historique pour git log
-
-      - name: Configure Git identity
-        run: |
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          git config --global user.name "${{ github.actor }}"
-          # Vérifier que la configuration a bien été appliquée
-          echo "Git user.email: $(git config --global user.email)"
-          echo "Git user.name: $(git config --global user.name)"
-          # S'assurer que l'identité est bien définie pour ce dépôt
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git config user.name "${{ github.actor }}"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -42,42 +83,7 @@ jobs:
         run: dart format . --set-exit-if-changed || true
 
       - name: Static analysis
-        run: |
-          flutter analyze > analyze.log || true
-          cat analyze.log
+        run: flutter analyze
 
       - name: Run tests
-        run: |
-          http_code=$(curl -o /dev/null -s -w "%{http_code}" "http://20.188.40.98:8080/clicker/testuser")
-          echo "API HTTP response code: $http_code"
-        
-      - name: Make release script executable
-        run: chmod +x release.sh
-
-      - name: Run release script
-        run: ./release.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  release:
-    runs-on: ubuntu-latest
-    needs: test
-    if: ${{ github.ref == 'refs/heads/test' }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Setup Git
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-      - name: Make release script executable
-        run: chmod +x ./scripts/release.sh
-
-      - name: Run release
-        run: ./scripts/release.sh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: flutter test --reporter expanded
