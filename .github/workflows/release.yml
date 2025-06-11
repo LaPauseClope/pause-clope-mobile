@@ -2,7 +2,7 @@ name: Deploy Release
 
 on:
   push:
-    branches: [backupmain] # À remplacer par main en prod
+    branches: [main]
 
 jobs:
   release:
@@ -36,21 +36,21 @@ jobs:
   merge_release_to_main:
     runs-on: ubuntu-latest
     needs: release
-    if: ${{ github.ref == 'refs/heads/backupmain' && needs.release.result == 'success' }}
+    if: ${{ github.ref == 'refs/heads/release' && needs.release.result == 'success' }}
 
     steps:
-      - name: Checkout release branch
+      - name: Checkout release
         uses: actions/checkout@v3
         with:
           ref: release
           fetch-depth: 0
 
-      - name: Setup Git
+      - name: Setup Git identity
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Force merge release into main (keep release content)
+      - name: Force merge release into main
         run: |
           git fetch origin
           git checkout main
