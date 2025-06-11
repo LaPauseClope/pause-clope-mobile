@@ -21,6 +21,9 @@ rollback() {
   git push origin --delete "$NEW_VERSION" 2>/dev/null || true
   gh release delete "$NEW_VERSION" --yes 2>/dev/null || true
 
+  echo "Push du rollback vers $CURRENT_BRANCH..."
+  git push origin "$CURRENT_BRANCH" --force
+
   echo "Rollback terminé. État restauré."
   exit 1
 }
@@ -113,7 +116,7 @@ git add CHANGELOG.md
 
 echo "Création du tag $NEW_VERSION"
 git commit -m "chore(release): $NEW_VERSION"
-exit 42  # erreur simulée ici !
+# exit 42  # erreur simulée ici !
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
 echo "Poussage vers origin/$CURRENT_BRANCH"
