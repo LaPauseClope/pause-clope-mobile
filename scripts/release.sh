@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 
 ##########################################
@@ -11,6 +12,7 @@ rollback() {
   git clean -fd
   git checkout "$CURRENT_BRANCH"
 
+  echo "Retour à la branche $CURRENT_BRANCH"
   echo "Suppression du tag $NEW_VERSION localement (s’il existe)..."
   git tag -d "$NEW_VERSION" 2>/dev/null || true
 
@@ -30,11 +32,14 @@ rollback() {
 trap rollback ERR
 
 ##########################################
-#           Configurations               #
+#        Variables de configuration      #
 ##########################################
 CURRENT_BRANCH="main"
 RELEASE_BRANCH="release"
 
+##########################################
+#         1. Préparation des branches    #
+##########################################
 echo "Préparation de la branche $RELEASE_BRANCH depuis $CURRENT_BRANCH..."
 git fetch origin
 git checkout -B "$RELEASE_BRANCH" "origin/$RELEASE_BRANCH" || git checkout -b "$RELEASE_BRANCH"
@@ -42,7 +47,7 @@ git reset --hard "origin/$CURRENT_BRANCH"
 git clean -fd
 
 ##########################################
-#      Détection de la version           #
+#         2. Détection des commits       #
 ##########################################
 echo "Détection du type de version..."
 LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -55,16 +60,22 @@ CURRENT_VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}')
 IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
 
 if [ -n "$BREAKING_CHANGE" ]; then
+  echo "Changement majeur détecté"
   MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
 elif [ -n "$FEATURE" ]; then
+  echo "Nouvelle fonctionnalité détectée"
   MINOR=$((MINOR + 1)); PATCH=0
 else
+  echo "Changement mineur détecté"
   PATCH=$((PATCH + 1))
 fi
 
 NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
-# Supprimer le tag si déjà existant
+##########################################
+#     3. Nettoyage de tags existants     #
+##########################################
+echo "Vérification des tags existants..."
 git fetch origin --tags
 while git tag -l | grep -q "^$NEW_VERSION$"; do
   echo "Le tag $NEW_VERSION existe déjà. Suppression..."
@@ -76,18 +87,16 @@ while git tag -l | grep -q "^$NEW_VERSION$"; do
 done
 
 echo "Nouvelle version déterminée : $NEW_VERSION"
-
-##########################################
-#        Mise à jour pubspec.yaml        #
-##########################################
 sed -i "s/version: $CURRENT_VERSION/version: $NEW_VERSION/" pubspec.yaml
 git add pubspec.yaml
 
 ##########################################
-#       Génération du changelog          #
+#        4. Génération du changelog      #
 ##########################################
 echo "Génération du changelog..."
 TEMP_CHANGELOG=$(mktemp)
+RELEASE_NOTES_FILE="$TEMP_CHANGELOG"
+
 echo "## [$NEW_VERSION] - $(date +%F)" > "$TEMP_CHANGELOG"
 echo "" >> "$TEMP_CHANGELOG"
 
@@ -108,31 +117,16 @@ mv "$TEMP_CHANGELOG" CHANGELOG.md
 git add CHANGELOG.md
 
 ##########################################
-# Commit + Tag local (pas encore push)  #
+#       5. Commit, tag, push, release    #
 ##########################################
 echo "Commit, tag et release..."
 git commit -m "chore(release): $NEW_VERSION"
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
-##########################################
-# GitHub Release - AVANT le push         #
-##########################################
-RELEASE_NOTES_FILE=$(mktemp)
-cp CHANGELOG.md "$RELEASE_NOTES_FILE"
-
-gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file "$RELEASE_NOTES_FILE" || rollback
-
-##########################################
-# Simulation d’erreur                    #
-##########################################
-echo "Simulation d'une erreur après création du tag..."
-exit 42
-
-##########################################
-# Push (uniquement si GH release ok)     #
-##########################################
-echo "Push vers origin/$RELEASE_BRANCH et le tag..."
 git push origin "$RELEASE_BRANCH" --force || rollback
 git push origin "$NEW_VERSION" || rollback
 
-echo "Publication terminée avec succès."
+gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file "$RELEASE_NOTES_FILE" --target HEAD || rollback
+
+# Simuler une erreur pour test de rollback (décommenter la ligne suivante si besoin)
+exit 42
