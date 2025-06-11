@@ -37,8 +37,6 @@ jobs:
         run: |
           http_code=$(curl -o /dev/null -s -w "%{http_code}" "http://20.188.40.98:8080/clicker/testuser")
           echo "API HTTP response code: $http_code"
-
-
       - name: Run tests
         run: flutter test --reporter expanded
 
