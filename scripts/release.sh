@@ -34,7 +34,7 @@ trap rollback ERR
 ##########################################
 #        Variables de configuration      #
 ##########################################
-CURRENT_BRANCH="backupmain"  # À remplacer par "main" en prod
+CURRENT_BRANCH="main"
 RELEASE_BRANCH="release"
 
 ##########################################
@@ -120,7 +120,7 @@ git add CHANGELOG.md
 ##########################################
 echo "Création du commit et du tag $NEW_VERSION..."
 git commit -m "chore(release): $NEW_VERSION"
-exit 42
+# exit 42
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
 echo "Push vers origin/$RELEASE_BRANCH et le tag..."
