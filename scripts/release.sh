@@ -13,43 +13,42 @@ rollback() {
   git checkout "$CURRENT_BRANCH"
 
   echo "Retour à la branche $CURRENT_BRANCH"
-  echo "Suppression du tag $NEW_VERSION s’il a été créé..."
-
+  echo "🗑 Suppression du tag $NEW_VERSION localement (s’il existe)..."
   git tag -d "$NEW_VERSION" 2>/dev/null || true
 
-  echo "Synchronisation des tags locaux avec le distant..."
-  git fetch origin --tags --force
+  echo "Suppression du tag distant (s’il existe)..."
+  git push --delete origin "$NEW_VERSION" 2>/dev/null || true
 
-  git push origin --delete "$NEW_VERSION" 2>/dev/null || true
+  echo "Suppression de la release GitHub si présente..."
   gh release delete "$NEW_VERSION" --yes 2>/dev/null || true
+
+  echo "Refetch des tags propres depuis origin..."
+  git fetch origin --tags --prune --force
 
   echo "Rollback terminé. État restauré."
   exit 1
 }
-
 
 trap rollback ERR
 
 ##########################################
 #        Variables de configuration      #
 ##########################################
-
 CURRENT_BRANCH="backupmain"  # À remplacer par "main" en prod
 RELEASE_BRANCH="release"
 
 ##########################################
 #         1. Préparation des branches    #
 ##########################################
-
 echo "Synchronisation avec $CURRENT_BRANCH..."
 git fetch origin
 git checkout -B "$RELEASE_BRANCH" "origin/$RELEASE_BRANCH" || git checkout -b "$RELEASE_BRANCH"
 git reset --hard "origin/$CURRENT_BRANCH"
+git clean -fd
 
 ##########################################
 #         2. Détection des commits       #
 ##########################################
-
 echo "Détermination de la plage de commits..."
 LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 COMMIT_RANGE="${LATEST_TAG}..HEAD"
@@ -77,9 +76,8 @@ NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 ##########################################
 #     3. Nettoyage de tags existants     #
 ##########################################
-
 echo "Vérification des tags existants..."
-git fetch --tags
+git fetch origin --tags
 while git tag -l | grep -q "^$NEW_VERSION$"; do
   echo "Le tag $NEW_VERSION existe déjà. Suppression..."
   git tag -d "$NEW_VERSION" || true
@@ -96,18 +94,17 @@ git add pubspec.yaml
 ##########################################
 #        4. Génération du changelog      #
 ##########################################
-
 echo "Génération du changelog..."
 TEMP_CHANGELOG=$(mktemp)
 echo "## [$NEW_VERSION] - $(date +%F)" > "$TEMP_CHANGELOG"
 echo "" >> "$TEMP_CHANGELOG"
 
 echo "### Added" >> "$TEMP_CHANGELOG"
-git log "$COMMIT_RANGE" --pretty=format:"%s" | grep -E "^feat" | sed 's/^feat: \(.*\)/- /' >> "$TEMP_CHANGELOG" || echo "- Aucun ajout" >> "$TEMP_CHANGELOG"
+git log "$COMMIT_RANGE" --pretty=format:"%s" | grep -E "^feat" | sed 's/^feat: \(.*\)/- \1/' >> "$TEMP_CHANGELOG" || echo "- Aucun ajout" >> "$TEMP_CHANGELOG"
 echo "" >> "$TEMP_CHANGELOG"
 
 echo "### Changed" >> "$TEMP_CHANGELOG"
-git log "$COMMIT_RANGE" --pretty=format:"%s" | grep -E "^fix|^refactor" | sed 's/^\(fix\|refactor\): \(.*\)/- : /' >> "$TEMP_CHANGELOG" || echo "- Aucun changement" >> "$TEMP_CHANGELOG"
+git log "$COMMIT_RANGE" --pretty=format:"%s" | grep -E "^fix|^refactor" | sed 's/^\(fix\|refactor\): \(.*\)/- \1: \2/' >> "$TEMP_CHANGELOG" || echo "- Aucun changement" >> "$TEMP_CHANGELOG"
 echo "" >> "$TEMP_CHANGELOG"
 
 if [ -f CHANGELOG.md ]; then
@@ -121,17 +118,16 @@ git add CHANGELOG.md
 ##########################################
 #       5. Commit, tag, push, release    #
 ##########################################
-
-echo "🏷 Création du commit et du tag $NEW_VERSION..."
+echo "Création du commit et du tag $NEW_VERSION..."
 git commit -m "chore(release): $NEW_VERSION"
 exit 42
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
-echo "Push vers origin/$RELEASE_BRANCH et le tag (forcé)..."
-git push origin "$RELEASE_BRANCH" --force || { echo "Échec du push vers $RELEASE_BRANCH"; exit 1; }
-git push origin "$NEW_VERSION" || { echo "Échec du push du tag"; exit 1; }
+echo "Push vers origin/$RELEASE_BRANCH et le tag..."
+git push origin "$RELEASE_BRANCH" --force || rollback
+git push origin "$NEW_VERSION" || rollback
 
 echo "Création de la release GitHub..."
 gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file CHANGELOG.md
 
-echo "Publication terminée avec succès"
+echo "Publication terminée avec succès."
