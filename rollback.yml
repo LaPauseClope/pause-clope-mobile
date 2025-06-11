@@ -24,10 +24,10 @@ jobs:
       - name: Checkout version ${{ github.event.inputs.version }}
         run: git checkout tags/${{ github.event.inputs.version }}
 
-      - name: Reset branch main to this tag
+      - name: Reset branch test to this tag
         run: |
-          git checkout -B main
-          git push origin main --force
+          git checkout -B test
+          git push origin test --force
 
       - name: Create rollback tag
         run: |
