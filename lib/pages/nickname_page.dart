@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:la_pause_clope/constants/image_paths.dart';
 
 import '../constants/app_colors.dart';
-import 'home_page.dart';
+import 'clicker_page.dart';
 
 class NicknamePage extends StatefulWidget {
   const NicknamePage({super.key});

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:la_pause_clope/pages/nickname_page.dart';
 
 import '../constants/api_config.dart';
 import '../constants/app_colors.dart';
@@ -122,7 +123,9 @@ class _ClickerPageState extends State<ClickerPage> {
   void _navigateBack(BuildContext context) {
     // Cancel the timer when navigating back to avoid memory leaks
     _apiTimer?.cancel();
-    Navigator.pop(context);
+    Navigator.pushReplacement(context, MaterialPageRoute(
+      builder: (context) => const NicknamePage(),
+    ),);
   }
 
   @override
@@ -149,23 +152,11 @@ class _ClickerPageState extends State<ClickerPage> {
       ),
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: ElevatedButton(
-              onPressed: _incrementCounter,
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.transparent),
-                overlayColor: WidgetStatePropertyAll(Colors.transparent),
-                elevation: WidgetStatePropertyAll(0.0),
-                shadowColor: WidgetStatePropertyAll(Colors.transparent),
-                padding: WidgetStatePropertyAll(EdgeInsets.all(0)),
-                foregroundColor: WidgetStatePropertyAll(Colors.transparent),
-                surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
-              ),
-              child: Image.asset(ImagePaths.coffee),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _incrementCounter,
+            child: Image.asset(
+              ImagePaths.coffee,
             ),
           ),
           Center(
