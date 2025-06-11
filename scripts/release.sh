@@ -65,6 +65,9 @@ NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 #     2. Nettoyage de tags existants     #
 ##########################################
 
+echo "Récupération des tags distants..."
+git fetch --tags
+
 while git tag -l | grep -q "^$NEW_VERSION$"; do
   echo "Le tag $NEW_VERSION existe déjà. Suppression..."
   git tag -d "$NEW_VERSION" || true
