@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../constants/api_config.dart';
+import '../constants/app_colors.dart';
 
 class ClickerPage extends StatefulWidget {
   const ClickerPage({super.key, required this.nickname});
@@ -27,6 +28,7 @@ class _ClickerPageState extends State<ClickerPage> {
     super.initState();
     // Start the timer when the widget is created
     _startApiTimer();
+    _fetchInitialData();
   }
 
   @override
@@ -34,6 +36,40 @@ class _ClickerPageState extends State<ClickerPage> {
     // Cancel the timer when the widget is disposed to avoid memory leaks
     _apiTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _fetchInitialData() async {
+    try {
+      final response = await http.get(Uri.parse(_clickerEndpoint + widget.nickname));
+
+      if (!context.mounted) {
+        return; // If the context is not mounted, do not proceed
+      }
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _counter = int.parse(response.body); // Initialize counter with fetched data
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to fetch initial data', style: TextStyle(color: Colors.white),),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Exception occurred during API call
+      print('Error fetching initial data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to fetch initial data', style: TextStyle(color: Colors.white),),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _incrementCounter() {
@@ -54,27 +90,47 @@ class _ClickerPageState extends State<ClickerPage> {
       final response = await http.post(
         Uri.parse(_clickerEndpoint + widget.nickname),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'nickname': widget.nickname, 'clicks': _counter}),
+        body: jsonEncode({'clicks': _counter}),
       );
 
+      if (!context.mounted) {
+        return; // If the context is not mounted, do not proceed
+      }
+
       if (response.statusCode == 200) {
-        // API call successful
-        print('Data sent successfully: ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Data saved', style: TextStyle(color: Colors.white),),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+          ),
+        );
       } else {
-        // API call failed
-        print(
-          'Failed to send data. Status code: ${response.statusCode}, Body: ${response.body}',
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save', style: TextStyle(color: Colors.white),),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       // Exception occurred during API call
       print('Error sending data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to save', style: TextStyle(color: Colors.white),),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.blue,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.nickname),
