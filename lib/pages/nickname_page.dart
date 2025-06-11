@@ -117,13 +117,14 @@ class _NicknamePageState extends State<NicknamePage>
   }
 
   Future<void> _navigateToHomePage(BuildContext context) async {
-
-
     if (_nicknameController.text.isNotEmpty) {
       _imageController.forward();
       _titleController.reverse();
       _fieldController.reverse();
       _buttonController.reverse();
+      setState(() {
+        _visibleText = '';
+      });
       await Future.delayed(const Duration(milliseconds: 1200), () {
         if (context.mounted) {
           Navigator.pushReplacement(
@@ -144,6 +145,9 @@ class _NicknamePageState extends State<NicknamePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+      ),
       backgroundColor: AppColors.blue,
       body: Stack(
         children: [
@@ -196,18 +200,18 @@ class _NicknamePageState extends State<NicknamePage>
                         fontSize: 18,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(
                           color: AppColors.white,
                           width: 2,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(color: Colors.black87, width: 2),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(
                           color: AppColors.white,
                           width: 2,

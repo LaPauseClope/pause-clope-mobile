@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../constants/api_config.dart';
 import '../constants/app_colors.dart';
+import '../constants/image_paths.dart';
 
 class ClickerPage extends StatefulWidget {
   const ClickerPage({super.key, required this.nickname});
@@ -22,6 +23,9 @@ class _ClickerPageState extends State<ClickerPage> {
 
   //Replace this by your API url
   final String _clickerEndpoint = '${ApiConfig.apiDomain}/clicker/';
+
+  IconData _iconSave = Icons.save;
+  IconData _iconFetch = Icons.refresh;
 
   @override
   void initState() {
@@ -40,36 +44,30 @@ class _ClickerPageState extends State<ClickerPage> {
 
   Future<void> _fetchInitialData() async {
     try {
-      final response = await http.get(Uri.parse(_clickerEndpoint + widget.nickname));
+      final response = await http.get(
+        Uri.parse(_clickerEndpoint + widget.nickname),
+      );
 
       if (!context.mounted) {
         return; // If the context is not mounted, do not proceed
       }
 
-      if (response.statusCode == 200) {
-        setState(() {
-          _counter = int.parse(response.body); // Initialize counter with fetched data
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to fetch initial data', style: TextStyle(color: Colors.white),),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      setState(() {
+        _iconFetch = response.statusCode == 200 ? Icons.check : Icons.error;
+      });
     } catch (e) {
       // Exception occurred during API call
       print('Error fetching initial data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to fetch initial data', style: TextStyle(color: Colors.white),),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.red,
-        ),
-      );
+      setState(() {
+        _iconFetch = Icons.error;
+      });
     }
+
+    Timer(const Duration(seconds: 5), () {
+      setState(() {
+        _iconFetch = Icons.refresh;
+      });
+    });
   }
 
   void _incrementCounter() {
@@ -98,33 +96,31 @@ class _ClickerPageState extends State<ClickerPage> {
       }
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Data saved', style: TextStyle(color: Colors.white),),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.green,
-          ),
-        );
+        setState(() {
+          _iconSave = Icons.check;
+        });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save', style: TextStyle(color: Colors.white),),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.red,
-          ),
-        );
+        setState(() {
+          _iconSave = Icons.error;
+        });
       }
     } catch (e) {
       // Exception occurred during API call
       print('Error sending data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to save', style: TextStyle(color: Colors.white),),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.red,
-        ),
-      );
+      setState(() {
+        _iconSave = Icons.error;
+      });
     }
+
+    Timer(const Duration(seconds: 5), () {
+      setState(() {
+        _iconSave = Icons.save;
+      });
+    });
+  }
+
+  void _navigateBack(BuildContext context) {
+    Navigator.of(context).pop();
   }
 
   @override
@@ -132,25 +128,55 @@ class _ClickerPageState extends State<ClickerPage> {
     return Scaffold(
       backgroundColor: AppColors.blue,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        leading: BackButton(onPressed: () => _navigateBack(context)),
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
         title: Text(widget.nickname),
+        actions: [
+          IconButton(
+            icon: Icon(_iconSave),
+            onPressed: _sendDataToApi, // Save data when the button is pressed
+          ),
+          IconButton(
+            icon: Icon(_iconFetch),
+            onPressed: () {
+              _fetchInitialData(); // Refresh data when the button is pressed
+            },
+          ),
+        ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ElevatedButton(
+              onPressed: _incrementCounter,
+              style: const ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+                overlayColor: WidgetStatePropertyAll(Colors.transparent),
+                elevation: WidgetStatePropertyAll(0.0),
+                shadowColor: WidgetStatePropertyAll(Colors.transparent),
+                padding: WidgetStatePropertyAll(EdgeInsets.all(0)),
+                foregroundColor: WidgetStatePropertyAll(Colors.transparent),
+                surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
+              ),
+              child: Image.asset(ImagePaths.coffee),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+          ),
+          Center(
+            child: Text(
+              'Clicks: $_counter',
+              style: const TextStyle(
+                fontSize: 24,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
