@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-echo "✅ Propagation auto vers main"
+echo "✅ Propagation auto vers backupmain"
 
 git fetch origin
-git checkout main
-git pull origin main
+git checkout backupmain
+git pull origin backupmain
 
-git merge origin/release --strategy=ours -m "chore: auto-merge release into main"
-git push origin main
+git merge origin/release --strategy=ours -m "chore: auto-merge release into backupmain"
+git push origin backupmain
 
-echo "🎉 Branche main mise à jour depuis release"
+echo "🎉 Branche backupmain mise à jour depuis release"
