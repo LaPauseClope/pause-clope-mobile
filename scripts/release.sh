@@ -34,6 +34,7 @@ trap rollback ERR
 ##########################################
 #        Variables de configuration      #
 ##########################################
+
 CURRENT_BRANCH="main"
 RELEASE_BRANCH="release"
 
