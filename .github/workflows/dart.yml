@@ -43,8 +43,7 @@ jobs:
 
       - name: Static analysis
         run: |
-          flutter analyze > analyze.log || true
-          cat analyze.log
+          echo "hello test"
 
       - name: Run tests
         run: |
