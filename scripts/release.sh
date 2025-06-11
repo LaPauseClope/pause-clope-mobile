@@ -128,6 +128,6 @@ git push origin "$RELEASE_BRANCH" --force || rollback
 git push origin "$NEW_VERSION" || rollback
 
 echo "Création de la release GitHub..."
-gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file CHANGELOG.md
+gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file "$TEMP_CHANGELOG"
 
 echo "Publication terminée avec succès."
