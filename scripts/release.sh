@@ -116,6 +116,7 @@ git add CHANGELOG.md
 
 echo "Création du tag $NEW_VERSION"
 git commit -m "chore(release): $NEW_VERSION"
+exit 42  # 💥 erreur simulée ici !
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
 echo "Poussage vers origin/$CURRENT_BRANCH"
