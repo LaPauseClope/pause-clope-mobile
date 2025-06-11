@@ -22,7 +22,8 @@ rollback() {
 }
 
 trap rollback ERR
-CURRENT_BRANCH="release"
+# CURRENT_BRANCH="release"
+CURRENT_BRANCH="backupmain"
 
 echo "🔍 Détection de la version précédente..."
 LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")

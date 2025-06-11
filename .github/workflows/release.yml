@@ -2,7 +2,8 @@ name: Deploy Release
 
 on:
   push:
-    branches: [release]
+    # branches: [release]
+    branches: [backupmain]
 
 jobs:
   release:

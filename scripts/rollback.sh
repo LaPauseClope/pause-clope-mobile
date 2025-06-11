@@ -6,7 +6,8 @@ if [ -z "$1" ]; then
 fi
 
 TAG="$1"
-BRANCH="release"
+# BRANCH="release"
+BRANCH="backupmain"
 
 echo "Rollback de $BRANCH à $TAG"
 
