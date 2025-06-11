@@ -35,3 +35,26 @@ jobs:
 
       - name: Run tests
         run: flutter test --reporter expanded
+
+  release:
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ github.ref == 'refs/heads/test' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Make release script executable
+        run: chmod +x ./scripts/release.sh
+
+      - name: Run release
+        run: ./scripts/release.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
