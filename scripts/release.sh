@@ -123,10 +123,12 @@ echo "Commit, tag et release..."
 git commit -m "chore(release): $NEW_VERSION"
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
-git push origin "$RELEASE_BRANCH" --force || rollback
-git push origin "$NEW_VERSION" || rollback
-
+# Essayer de créer la release AVANT de push
 gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file "$RELEASE_NOTES_FILE" --target HEAD || rollback
 
 # Simuler une erreur pour test de rollback (décommenter la ligne suivante si besoin)
 exit 42
+
+# Si la release réussit, on pousse
+git push origin "$RELEASE_BRANCH" --force || rollback
+git push origin "$NEW_VERSION" || rollback
