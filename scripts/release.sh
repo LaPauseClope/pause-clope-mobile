@@ -94,4 +94,7 @@ git push origin "$NEW_VERSION" || rollback
 
 gh release create "$NEW_VERSION" --title "Release $NEW_VERSION" --notes-file CHANGELOG.md
 
-echo "Release $NEW_VERSION publiée avec succès !"
+# echo "Release $NEW_VERSION publiée avec succès !"
+
+echo "Simulation d'une erreur après création du tag..."
+exit 42
