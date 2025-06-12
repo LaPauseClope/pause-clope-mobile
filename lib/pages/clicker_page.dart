@@ -89,6 +89,9 @@ class _ClickerPageState extends State<ClickerPage>
     }
 
     Timer(const Duration(seconds: 5), () {
+      if (!context.mounted) {
+        return; // If the context is not mounted, do not proceed
+      }
       setState(() {
         _iconFetch = Icons.refresh;
       });
