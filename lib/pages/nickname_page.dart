@@ -129,8 +129,10 @@ class _NicknamePageState extends State<NicknamePage>
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => ClickerPage(nickname: _nicknameController.text),
+            PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) => ClickerPage(nickname: _nicknameController.text),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
             ),
           );
         }

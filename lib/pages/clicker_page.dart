@@ -18,7 +18,8 @@ class ClickerPage extends StatefulWidget {
   State<ClickerPage> createState() => _ClickerPageState();
 }
 
-class _ClickerPageState extends State<ClickerPage> {
+class _ClickerPageState extends State<ClickerPage>
+    with TickerProviderStateMixin {
   int _counter = 0;
   Timer? _apiTimer;
 
@@ -28,9 +29,26 @@ class _ClickerPageState extends State<ClickerPage> {
   IconData _iconSave = Icons.save;
   IconData _iconFetch = Icons.refresh;
 
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+      reverseDuration: const Duration(milliseconds: 600),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOut,
+        reverseCurve: Curves.easeIn,
+      ),
+    );
+
     // Start the timer when the widget is created
     _startApiTimer();
     _fetchInitialData();
@@ -40,6 +58,7 @@ class _ClickerPageState extends State<ClickerPage> {
   void dispose() {
     // Cancel the timer when the widget is disposed to avoid memory leaks
     _apiTimer?.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -81,6 +100,7 @@ class _ClickerPageState extends State<ClickerPage> {
     setState(() {
       _counter++;
     });
+    _animationController.forward().then((_) => _animationController.reverse());
   }
 
   void _startApiTimer() {
@@ -129,9 +149,10 @@ class _ClickerPageState extends State<ClickerPage> {
   void _navigateBack(BuildContext context) {
     // Cancel the timer when navigating back to avoid memory leaks
     _apiTimer?.cancel();
-    Navigator.pushReplacement(context, MaterialPageRoute(
-      builder: (context) => const NicknamePage(),
-    ),);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const NicknamePage()),
+    );
   }
 
   @override
@@ -158,14 +179,23 @@ class _ClickerPageState extends State<ClickerPage> {
       ),
       body: Stack(
         children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _incrementCounter,
-            child: Image.asset(
-              ImagePaths.coffee,
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _incrementCounter,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Image.asset(ImagePaths.coffee, width: 500,),
+              ),
             ),
           ),
-          Center(
+          Positioned(
+            bottom: 48,
+            left: 48,
             child: Text(
               'Clicks: $_counter',
               style: const TextStyle(
