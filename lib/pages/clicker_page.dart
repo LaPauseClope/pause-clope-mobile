@@ -75,8 +75,7 @@ class _ClickerPageState extends State<ClickerPage>
       setState(() {
         _iconFetch = response.statusCode == 200 ? Icons.check : Icons.error;
         if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          _counter = int.parse(data); // Safely access 'clicks'
+          _counter = int.parse(response.body); // Safely access 'clicks'
         } else {
           _counter = 0; // Reset counter if API call fails
         }
