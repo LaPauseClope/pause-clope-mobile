@@ -2,6 +2,7 @@
 
 [![Flutter Test](https://github.com/LaPauseClope/pause-clope-mobile/actions/workflows/dart.yml/badge.svg)](https://github.com/LaPauseClope/pause-clope-mobile/actions/workflows/dart.yml)
 [![Latest Release](https://img.shields.io/github/v/release/LaPauseClope/pause-clope-mobile?style=flat&sort=semver&cache_bust=1)](https://github.com/LaPauseClope/pause-clope-mobile/releases)
+[![PDF](https://img.shields.io/badge/ouvrir-pdf-red)](./Presentation-du-projet-Pause-Clope.pdf)
 
 
 A Flutter app to help you take smarter breaks... ☁️🚬
